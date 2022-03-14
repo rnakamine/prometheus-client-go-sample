@@ -24,8 +24,9 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// /api/v1/query
 	query := "up"
+
+	// /api/v1/query
 	value, warnings, err := v1api.Query(ctx, query, time.Now())
 	if err != nil {
 		fmt.Printf("Error querying Prometheus: %v\n", err)
@@ -35,6 +36,24 @@ func main() {
 		fmt.Printf("Warnings: %v\n", warnings)
 	}
 	for _, v := range value.(model.Vector) {
+		fmt.Println(v)
+	}
+
+	// /api/v1/query_range
+	r := v1.Range{
+		Start: time.Now().Add(-10 * time.Second),
+		End:   time.Now(),
+		Step:  10 * time.Second,
+	}
+	value, warnings, err = v1api.QueryRange(ctx, query, r)
+	if err != nil {
+		fmt.Printf("Error querying Prometheus: %v\n", err)
+		os.Exit(1)
+	}
+	if len(warnings) > 0 {
+		fmt.Printf("Warnings: %v\n", warnings)
+	}
+	for _, v := range value.(model.Matrix) {
 		fmt.Println(v)
 	}
 }
